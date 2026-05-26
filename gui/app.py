@@ -155,7 +155,16 @@ class PredictorSaltosApp(ctk.CTk):
         self.entrada_probabilidad.pack(pady=5)
 
         ctk.CTkButton(frame, text="Generar aleatoria",
-                      command=self.generar_aleatoria).pack(pady=5)
+                    command=self.generar_aleatoria).pack(pady=5)
+
+        # Cuadro para mostrar la traza generada
+        ctk.CTkLabel(frame, text="Traza generada").pack(pady=(10, 2))
+
+        self.texto_traza = ctk.CTkTextbox(frame, height=120, width=230)
+        self.texto_traza.pack(pady=5)
+
+        self.texto_traza.insert("end", "Aquí se mostrará la traza generada...")
+        self.texto_traza.configure(state="disabled")
 
         # Acciones principales
         ctk.CTkButton(frame, text="Analizar",
@@ -209,16 +218,65 @@ class PredictorSaltosApp(ctk.CTk):
 
         self.traza_actual = entrada
 
+    def mostrar_traza_actual(self):
+        """Muestra la traza actual en el cuadro de texto."""
+
+        if not hasattr(self, "texto_traza"):
+            return
+
+        texto = " ".join(self.traza_actual)
+
+        self.texto_traza.configure(state="normal")
+        self.texto_traza.delete("1.0", "end")
+
+        if texto:
+            self.texto_traza.insert("end", texto)
+        else:
+            self.texto_traza.insert("end", "No hay traza cargada.")
+
+        self.texto_traza.configure(state="disabled")
+
+        
     def generar_aleatoria(self):
-        """Genera una traza aleatoria."""
+        """Genera una traza aleatoria y la muestra en pantalla."""
         try:
             n = int(self.entrada_cantidad.get() or 100)
-            p = float(self.entrada_probabilidad.get() or 50) / 100
+            p = float(self.entrada_probabilidad.get() or 50)
 
+            if n <= 0:
+                messagebox.showerror("Error", "La cantidad debe ser mayor que 0")
+                return
+
+            if p < 0 or p > 100:
+                messagebox.showerror("Error", "La probabilidad debe estar entre 0 y 100")
+                return
+
+            # Convertimos el porcentaje a decimal
+            p = p / 100
+
+            # Generamos la traza
             self.traza_actual = generar_traza_aleatoria(n, p)
 
-        except:
-            messagebox.showerror("Error", "Valores inválidos")
+            # Mostramos la traza en pantalla
+            self.mostrar_traza_actual()
+
+            # Mostramos estadísticas básicas
+            stats = analizar_traza(self.traza_actual)
+            self.label_estadisticas.configure(
+                text=f"Traza generada | Total: {stats['total']} | T: {stats['tomados']} | N: {stats['no_tomados']}"
+            )
+
+        except ValueError:
+            messagebox.showerror("Error", "Valores inválidos. Usa números en cantidad y probabilidad.")
+            """Genera una traza aleatoria."""
+            try:
+                n = int(self.entrada_cantidad.get() or 100)
+                p = float(self.entrada_probabilidad.get() or 50) / 100
+
+                self.traza_actual = generar_traza_aleatoria(n, p)
+
+            except:
+                messagebox.showerror("Error", "Valores inválidos")
 
     def analizar(self):
         """Ejecuta la comparación de predictores."""
