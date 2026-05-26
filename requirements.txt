@@ -1,0 +1,12 @@
+
+# Librería para crear una interfaz gráfica moderna basada en Tkinter
+customtkinter
+
+# Librería para generar gráficas
+matplotlib
+
+# Librería para manejar datos en tablas y exportar información
+pandas
+
+# Motor necesario para exportar archivos Excel desde pandas
+openpyxl
